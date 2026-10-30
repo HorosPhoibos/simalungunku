@@ -5,6 +5,12 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    export default defineConfig(() => {
+  return {
+    base: '/simalungunku/',
+    plugins: [react(), tailwindcss()],
+    resolve: {
+// ... (biarkan sisa kode di bawahnya sama persis)
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
