@@ -1,0 +1,6 @@
+{
+  "name": "Pustaha Simalungun — Kamus Korpus, Dialek & Penerjemah Multimodal",
+  "description": "Kamus Bahasa Simalungun–Indonesia berbasis korpus sejajar Alkitab Simalungun & Terjemahan Baru, variasi dialek wilayah, penerjemah suara otomatis dengan TTS, serta penerjemah kamera/foto interaktif.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

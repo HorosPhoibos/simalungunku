@@ -1,0 +1,299 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isVerifiedUser() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 3. Entity Validation Blueprints (Verbatim synced with firebase-blueprint.json)
+    function isValidUserProfile(data) {
+      return data.keys().hasAll([
+        'uid',
+        'displayName',
+        'myGender',
+        'myMarga',
+        'myFatherName',
+        'myMotherName',
+        'myMotherMarga',
+        'mySpouseName',
+        'mySpouseMarga',
+        'mySpouseFatherName',
+        'mySpouseMotherName',
+        'mySpouseMotherMarga',
+        'mySpouseOmpungMarga',
+        'myFatherMotherMarga',
+        'myMotherMotherMarga',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'uid',
+        'displayName',
+        'myGender',
+        'myMarga',
+        'myFatherName',
+        'myMotherName',
+        'myMotherMarga',
+        'mySpouseName',
+        'mySpouseMarga',
+        'mySpouseFatherName',
+        'mySpouseMotherName',
+        'mySpouseMotherMarga',
+        'mySpouseOmpungMarga',
+        'myFatherMotherMarga',
+        'myMotherMotherMarga',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.uid == request.auth.uid &&
+      data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 100 &&
+      data.myGender is string && data.myGender.size() >= 1 && data.myGender.size() <= 20 &&
+      (data.myGender == 'Laki-laki' || data.myGender == 'Perempuan') &&
+      data.myMarga is string && data.myMarga.size() >= 1 && data.myMarga.size() <= 100 &&
+      data.myFatherName is string && data.myFatherName.size() >= 0 && data.myFatherName.size() <= 100 &&
+      data.myMotherName is string && data.myMotherName.size() >= 0 && data.myMotherName.size() <= 100 &&
+      data.myMotherMarga is string && data.myMotherMarga.size() >= 1 && data.myMotherMarga.size() <= 100 &&
+      data.mySpouseName is string && data.mySpouseName.size() >= 0 && data.mySpouseName.size() <= 100 &&
+      data.mySpouseMarga is string && data.mySpouseMarga.size() >= 0 && data.mySpouseMarga.size() <= 100 &&
+      data.mySpouseFatherName is string && data.mySpouseFatherName.size() >= 0 && data.mySpouseFatherName.size() <= 100 &&
+      data.mySpouseMotherName is string && data.mySpouseMotherName.size() >= 0 && data.mySpouseMotherName.size() <= 100 &&
+      data.mySpouseMotherMarga is string && data.mySpouseMotherMarga.size() >= 0 && data.mySpouseMotherMarga.size() <= 100 &&
+      data.mySpouseOmpungMarga is string && data.mySpouseOmpungMarga.size() >= 0 && data.mySpouseOmpungMarga.size() <= 100 &&
+      data.myFatherMotherMarga is string && data.myFatherMotherMarga.size() >= 0 && data.myFatherMotherMarga.size() <= 100 &&
+      data.myMotherMotherMarga is string && data.myMotherMotherMarga.size() >= 0 && data.myMotherMotherMarga.size() <= 100 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidCustomLexiconEntry(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'simalungun',
+        'indonesian',
+        'partOfSpeech',
+        'category',
+        'exampleSimalungun',
+        'exampleIndonesian',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'simalungun',
+        'indonesian',
+        'partOfSpeech',
+        'category',
+        'exampleSimalungun',
+        'exampleIndonesian',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.simalungun is string && data.simalungun.size() >= 1 && data.simalungun.size() <= 200 &&
+      data.indonesian is string && data.indonesian.size() >= 1 && data.indonesian.size() <= 300 &&
+      data.partOfSpeech is string && data.partOfSpeech.size() >= 1 && data.partOfSpeech.size() <= 30 &&
+      data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+      data.exampleSimalungun is string && data.exampleSimalungun.size() >= 0 && data.exampleSimalungun.size() <= 400 &&
+      data.exampleIndonesian is string && data.exampleIndonesian.size() >= 0 && data.exampleIndonesian.size() <= 400 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    function isValidSavedTranslation(data) {
+      return data.keys().hasAll([
+        'ownerId',
+        'sourceText',
+        'translatedText',
+        'direction',
+        'style',
+        'phoneticGuide',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.keys().hasOnly([
+        'ownerId',
+        'sourceText',
+        'translatedText',
+        'direction',
+        'style',
+        'phoneticGuide',
+        'createdAt',
+        'updatedAt'
+      ]) &&
+      data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$') &&
+      data.ownerId == request.auth.uid &&
+      data.sourceText is string && data.sourceText.size() >= 1 && data.sourceText.size() <= 1000 &&
+      data.translatedText is string && data.translatedText.size() >= 1 && data.translatedText.size() <= 1000 &&
+      data.direction is string && data.direction.size() >= 1 && data.direction.size() <= 30 &&
+      data.style is string && data.style.size() >= 1 && data.style.size() <= 30 &&
+      data.phoneticGuide is string && data.phoneticGuide.size() >= 0 && data.phoneticGuide.size() <= 1000 &&
+      data.createdAt is timestamp &&
+      data.updatedAt is timestamp;
+    }
+
+    // 4. Collection: /users/{userId}
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == userId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+
+      allow update: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserProfile(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'displayName',
+            'myGender',
+            'myMarga',
+            'myFatherName',
+            'myMotherName',
+            'myMotherMarga',
+            'mySpouseName',
+            'mySpouseMarga',
+            'mySpouseFatherName',
+            'mySpouseMotherName',
+            'mySpouseMotherMarga',
+            'mySpouseOmpungMarga',
+            'myFatherMotherMarga',
+            'myMotherMotherMarga',
+            'updatedAt'
+          ])
+        );
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      // 5. Subcollection: /users/{userId}/lexicon/{entryId}
+      match /lexicon/{entryId} {
+        allow get: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          existing().ownerId == request.auth.uid &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow list: if isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          isValidCustomLexiconEntry(incoming()) &&
+          incoming().ownerId == userId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          isValidCustomLexiconEntry(incoming()) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'simalungun',
+              'indonesian',
+              'partOfSpeech',
+              'category',
+              'exampleSimalungun',
+              'exampleIndonesian',
+              'updatedAt'
+            ])
+          ) &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow delete: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(entryId) &&
+          existing().ownerId == request.auth.uid &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+      }
+
+      // 6. Subcollection: /users/{userId}/translations/{cacheId}
+      match /translations/{cacheId} {
+        allow get: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(cacheId) &&
+          existing().ownerId == request.auth.uid &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow list: if isOwner(userId) &&
+          existing().ownerId == request.auth.uid;
+
+        allow create: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(cacheId) &&
+          isValidSavedTranslation(incoming()) &&
+          incoming().ownerId == userId &&
+          incoming().createdAt == request.time &&
+          incoming().updatedAt == request.time &&
+          exists(/databases/$(database)/documents/users/$(userId)) &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(cacheId) &&
+          isValidSavedTranslation(incoming()) &&
+          incoming().ownerId == existing().ownerId &&
+          incoming().createdAt == existing().createdAt &&
+          incoming().updatedAt == request.time &&
+          (
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'sourceText',
+              'translatedText',
+              'direction',
+              'style',
+              'phoneticGuide',
+              'updatedAt'
+            ])
+          ) &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow delete: if isOwner(userId) &&
+          isValidId(userId) &&
+          isValidId(cacheId) &&
+          existing().ownerId == request.auth.uid &&
+          get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+      }
+    }
+  }
+}

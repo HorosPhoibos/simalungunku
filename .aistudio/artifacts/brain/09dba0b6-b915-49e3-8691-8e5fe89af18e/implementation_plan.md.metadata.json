@@ -1,0 +1,6 @@
+{
+  "summary":  "Rencana implementasi aplikasi Kamus & Penerjemah Multimodal Simalungun (Pustaha Simalungun) yang menggabungkan korpus sejajar Alkitab Simalungun & Terjemahan Baru, kosakata percakapan harian, variasi dialek (Raya, Silimakuta/Atas, Topi Pasir, Jahe-jahe), referensi Doding Haleluya GKPS & video, penerjemah suara otomatis dengan pelafalan TTS, serta penerjemah kamera/foto dengan deteksi teks (bounding box) dan rincian kosakata.",
+  "updatedAt":  "2026-10-30T04:37:50.207295155Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
